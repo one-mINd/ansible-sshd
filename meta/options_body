@@ -1,3 +1,4 @@
+Include
 Port
 AddressFamily
 ListenAddress
@@ -17,6 +18,7 @@ AuthorizedPrincipalsCommand
 AuthorizedPrincipalsCommandUser
 AuthorizedPrincipalsFile
 Banner
+CanonicalMatchUser
 CASignatureAlgorithms
 ChallengeResponseAuthentication
 ChannelTimeout
@@ -34,11 +36,15 @@ ExposeAuthInfo
 FingerprintHash
 ForceCommand
 GatewayPorts
+GSSAPIAllowS4U2Self
 GSSAPIAuthentication
 GSSAPICleanupCredentials
+GSSAPIDelegateCredentials
 GSSAPIEnablek5users
+GSSAPIIndicators
 GSSAPIKeyExchange
 GSSAPIKexAlgorithms
+GSSAPIProxyS4U2Services
 GSSAPIStoreCredentialsOnRekey
 GSSAPIStrictAcceptorCheck
 HPNBufferSize
@@ -50,7 +56,6 @@ HostbasedAcceptedKeyTypes
 HostbasedAcceptedAlgorithms
 HostbasedAuthentication
 HostbasedUsesNameFromPacketOnly
-Include
 IPQoS
 IgnoreRhosts
 IgnoreUserKnownHosts
@@ -72,6 +77,7 @@ MaxSessions
 MaxStartups
 ModuliFile
 NoneEnabled
+PAMServiceName
 PasswordAuthentication
 PermitEmptyPasswords
 PermitListen
@@ -81,6 +87,8 @@ PermitTTY
 PermitTunnel
 PermitUserEnvironment
 PermitUserRC
+PerSourcePenalties
+PerSourcePenaltyExemptList
 PerSourceMaxStartups
 PerSourceNetBlockSize
 PidFile
@@ -92,6 +100,7 @@ PubkeyAuthOptions
 PubkeyAuthentication
 RSAAuthentication
 RSAMinSize
+RefuseConnection
 RekeyLimit
 RequiredRSASize
 RevokedKeys
@@ -100,6 +109,8 @@ SecurityKeyProvider
 SetEnv
 ServerKeyBits
 ShowPatchLevel
+SshdAuthPath
+SshdSessionPath
 StreamLocalBindMask
 StreamLocalBindUnlink
 StrictModes
@@ -112,6 +123,8 @@ UnusedConnectionTimeout
 UseDNS
 UseLogin
 UsePAM
+UsePAMCheckLocks
+UsePrivilegeSeparation
 VersionAddendum
 X11DisplayOffset
 X11MaxDisplays

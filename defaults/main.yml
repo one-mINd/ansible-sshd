@@ -3,6 +3,9 @@
 # Set to false to disable this role completely
 sshd_enable: true
 
+# If true, record begin/success fingerprints in the system log (for diagnostics/telemetry)
+sshd_enable_fingerprint: false
+
 # Don't apply OS defaults when set to true
 sshd_skip_defaults: false
 
@@ -10,8 +13,17 @@ sshd_skip_defaults: false
 # daemon at all
 sshd_manage_service: true
 
-# If the below is false, don't reload the ssh daemon on change
+# If the below is false, don't reload the systemd daemon on change of the service or socket
+sshd_allow_daemon_reload: true
+
+# If the below is false, don't reload the ssh service on change
 sshd_allow_reload: true
+
+# If the below is false, don't restart the ssh service on change that requires restart
+sshd_allow_restart: true
+
+# If the below is false, don't restart the ssh socket on change that requires restart
+sshd_socket_allow_restart: true
 
 # If the below is true, also install service files from the templates pointed
 # to by the `sshd_service_template_*` variables
@@ -37,12 +49,15 @@ sshd_sysconfig_override_crypto_policy: false
 # generator
 sshd_sysconfig_use_strong_rng: 0
 
-# Empty dicts to avoid errors
-sshd: {}
-
 # The path to sshd_config file. This is useful when creating an included
 # configuration file snippet or configuring second sshd service
 sshd_config_file: "{{ __sshd_config_file }}"
+
+# If not empty, list of trusted CA keys
+sshd_trusted_user_ca_keys_list: []
+
+# If not empty, dict containing principals for users in the os
+sshd_principals: {}
 
 ### VARS DEFAULTS
 ### The following are defaults for OS specific configuration in var files in
@@ -59,6 +74,20 @@ sshd_sftp_server: "{{ __sshd_sftp_server }}"
 
 sshd_drop_in_dir_mode: "{{ __sshd_drop_in_dir_mode }}"
 sshd_main_config_file: "{{ __sshd_main_config_file }}"
+
+sshd_trustedusercakeys_directory_owner: "{{ __sshd_trustedusercakeys_directory_owner }}"
+sshd_trustedusercakeys_directory_group: "{{ __sshd_trustedusercakeys_directory_group }}"
+sshd_trustedusercakeys_directory_mode: "{{ __sshd_trustedusercakeys_directory_mode }}"
+sshd_trustedusercakeys_file_owner: "{{ __sshd_trustedusercakeys_file_owner }}"
+sshd_trustedusercakeys_file_group: "{{ __sshd_trustedusercakeys_file_group }}"
+sshd_trustedusercakeys_file_mode: "{{ __sshd_trustedusercakeys_file_mode }}"
+
+sshd_authorizedprincipals_directory_owner: "{{ __sshd_authorizedprincipals_directory_owner }}"
+sshd_authorizedprincipals_directory_group: "{{ __sshd_authorizedprincipals_directory_group }}"
+sshd_authorizedprincipals_directory_mode: "{{ __sshd_authorizedprincipals_directory_mode }}"
+sshd_authorizedprincipals_file_owner: "{{ __sshd_authorizedprincipals_file_owner }}"
+sshd_authorizedprincipals_file_group: "{{ __sshd_authorizedprincipals_file_group }}"
+sshd_authorizedprincipals_file_mode: "{{ __sshd_authorizedprincipals_file_mode }}"
 
 # This lists by default all hostkeys as rendered in the generated configuration
 # file ("auto"). Before attempting to run sshd (either for verification of
@@ -81,3 +110,9 @@ sshd_manage_firewall: false
 # If this option is enabled, the role will configure selinux to allow sshd to
 # bind the ports defined in the configuration. This works only on Red Hat based systems.
 sshd_manage_selinux: false
+
+# Selection among `service` and `socket`, which is used in systemd to handle
+# the sshd connection. Only one can be active at a time, otherwise both
+# sshd and systemd will try to bind the same port and one of them will fail.
+# Default depends on OS.
+sshd_systemd_unit: "{{ __sshd_systemd_unit }}"

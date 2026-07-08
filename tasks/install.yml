@@ -4,10 +4,15 @@
   when:
     - not __sshd_os_supported | bool
 
+- name: Check variables are safe for use for shell expansions and word splitting
+  ansible.builtin.include_tasks: check_vars.yml
+
 - name: Install ssh packages
   ansible.builtin.package:
     name: "{{ sshd_packages }}"
     state: present
+    use: "{{ (__sshd_is_ostree | d(false)) |
+      ternary('ansible.posix.rhel_rpm_ostree', omit) }}"
 
 - name: Sysconfig configuration
   ansible.builtin.template:
@@ -20,18 +25,18 @@
   when:
     - sshd_sysconfig | bool
     - __sshd_sysconfig_supports_use_strong_rng or __sshd_sysconfig_supports_crypto_policy
-  notify: reload_sshd
+  notify: sshd_restart
 
 - name: Check FIPS mode
   ansible.builtin.include_tasks: check_fips.yml
   when:
-    - __sshd_hostkeys_nofips | d([])
+    - __sshd_hostkeys_nofips | d([]) | length > 0
 
 - name: Make sure hostkeys are available and have expected permissions
-  vars: &share_vars
-    # 'MAo=' evaluates to '0\n' in base 64 encoding, which is default
+  vars:
+    &share_vars # 'MAo=' evaluates to '0\n' in base 64 encoding, which is default
     __sshd_fips_mode: >-
-      {{ __sshd_hostkeys_nofips | d([]) and
+      {{ __sshd_hostkeys_nofips | d([]) | length > 0 and
          (__sshd_kernel_fips_mode.content | d('MAo=') | b64decode | trim == '1' or
           __sshd_userspace_fips_mode.content | d('MAo=') | b64decode | trim != '0') }}
     # This mimics the macro body_option() in sshd_config.j2
@@ -39,8 +44,8 @@
     __sshd_hostkeys_from_config: >-
       {% if sshd_HostKey is defined %}
         {{ sshd_HostKey | to_json }}
-      {% elif sshd['HostKey'] is defined %}
-        {{ sshd['HostKey'] | to_json }}
+      {% elif __sshd_config['HostKey'] is defined %}
+        {{ __sshd_config['HostKey'] | to_json }}
       {% elif __sshd_defaults['HostKey'] is defined and not sshd_skip_defaults %}
         {% if __sshd_fips_mode %}
           {{ __sshd_defaults['HostKey'] | difference(__sshd_hostkeys_nofips) | to_json }}
@@ -78,7 +83,7 @@
         {% if sshd_sysconfig %}
           source /etc/sysconfig/sshd
         {% endif %}
-        ssh-keygen -q -t {{ item | regex_search('(rsa|dsa|ecdsa|ed25519)') }} -f {{ item }} -C '' -N ''
+        ssh-keygen -q -t {{ item | regex_search('(rsa|dsa|ecdsa|ed25519)') }} -f {{ item | quote }} -C '' -N ''
       args:
         creates: "{{ item }}"
       loop: "{{ __sshd_verify_hostkeys | from_json | list }}"
@@ -107,13 +112,13 @@
 
     - name: Generate temporary hostkey
       ansible.builtin.command: >
-        ssh-keygen -q -t rsa -f '{{ sshd_test_hostkey.path }}/rsa_key' -C '' -N ''
+        ssh-keygen -q -t rsa -f {{ sshd_test_hostkey.path | quote }}/rsa_key -C '' -N ''
       changed_when: false
       when: sshd_test_hostkey.path is defined
 
     - name: Make sure sshd runtime directory is present
       ansible.builtin.file:
-        path: "{{ __sshd_runtime_directory }}"
+        path: "/run/{{ __sshd_runtime_directory }}"
         state: directory
         owner: root
         group: root
@@ -124,20 +129,23 @@
     - name: Find SSHD ports
       ansible.builtin.include_tasks: find_ports.yml
 
+    - name: Find SSHD bind addresses
+      ansible.builtin.include_tasks: find_bind_addresses.yml
+
     - name: Configure firewall
       ansible.builtin.include_tasks: firewall.yml
       when:
         - sshd_manage_firewall | bool
         - ansible_facts['os_family'] == 'RedHat'
         - ansible_facts['distribution_version'] is version('7', '>=')
-        - ansible_virtualization_type|default(None) not in __sshd_skip_virt_env
+        - ansible_facts['virtualization_type'] | default(None) not in __sshd_skip_virt_env
 
     - name: Configure selinux
       ansible.builtin.include_tasks: selinux.yml
       when:
         - sshd_manage_selinux | bool
         - ansible_facts['os_family'] == 'RedHat'
-        - ansible_virtualization_type|default(None) not in __sshd_skip_virt_env
+        - ansible_facts['virtualization_type'] | default(None) not in __sshd_skip_virt_env
 
     - name: Create the complete configuration file
       ansible.builtin.include_tasks: install_config.yml
@@ -146,6 +154,10 @@
     - name: Update configuration file snippet
       ansible.builtin.include_tasks: install_namespace.yml
       when: sshd_config_namespace is not none
+
+    - name: Configure sshd to use SSH certificates
+      ansible.builtin.include_tasks: certificates.yml
+      when: sshd_trusted_user_ca_keys_list != []
 
   rescue:
     - name: Re-raise the error
