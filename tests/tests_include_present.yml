@@ -17,24 +17,23 @@
         state: absent
       when:
         - (ansible_facts['os_family'] == 'RedHat' and ansible_facts['distribution_major_version'] | int > 8) or
-          (ansible_facts['distribution'] == 'Ubuntu' and ansible_facts['distribution_major_version'] | int >= 22)
+          (ansible_facts['distribution'] == 'Ubuntu' and ansible_facts['distribution_major_version'] | int >= 20)
 
     - name: Create a new configuration in drop-in directory
-      ansible.builtin.include_role:
-        name: ansible-sshd
+      ansible.builtin.include_tasks: tasks/run_role_with_clear_facts.yml
       vars:
         sshd_config_file: /etc/ssh/sshd_config.d/00-ansible_system_role.conf
-        sshd:
+        sshd_config:
           Banner: /etc/include-issue
           Ciphers: aes192-ctr
       when:
         - (ansible_facts['os_family'] == 'RedHat' and ansible_facts['distribution_major_version'] | int > 8) or
-          (ansible_facts['distribution'] == 'Ubuntu' and ansible_facts['distribution_major_version'] | int >= 22)
+          (ansible_facts['distribution'] == 'Ubuntu' and ansible_facts['distribution_major_version'] | int >= 20)
 
     - name: Verify the options are correctly set
       when:
         - (ansible_facts['os_family'] == 'RedHat' and ansible_facts['distribution_major_version'] | int > 8) or
-          (ansible_facts['distribution'] == 'Ubuntu' and ansible_facts['distribution_major_version'] | int >= 22)
+          (ansible_facts['distribution'] == 'Ubuntu' and ansible_facts['distribution_major_version'] | int >= 20)
       tags: tests::verify
       block:
         - name: Flush handlers
@@ -70,13 +69,13 @@
         - name: Check RHEL content of the main configuration file
           ansible.builtin.assert:
             that:
-              - "config_main.content | b64decode | regex_search('Subsystem\\ssftp\\s/usr/libexec/openssh/sftp-server')"
+              - config_main.content | b64decode | regex_search('Subsystem\\ssftp\\s/usr/libexec/openssh/sftp-server') | length > 0
           when: ansible_facts['os_family'] == 'RedHat'
 
         - name: Check Ubuntu content of the main configuration file
           ansible.builtin.assert:
             that:
-              - "config_main.content | b64decode | regex_search('Subsystem\\ssftp\\s/usr/lib/openssh/sftp-server')"
+              - config_main.content | b64decode | regex_search('Subsystem\\ssftp\\s/usr/lib/openssh/sftp-server') | length > 0
           when: ansible_facts['os_family'] == 'Ubuntu'
 
     - name: "Restore configuration files"
@@ -108,13 +107,12 @@
         mode: '0777'
 
     - name: Create a new configuration in a custom drop-in directory
-      ansible.builtin.include_role:
-        name: ansible-sshd
+      ansible.builtin.include_tasks: tasks/run_role_with_clear_facts.yml
       vars:
         sshd_config_file: /etc/ssh/custom_sshd_config.d/custom-drop-in
         sshd_main_config_file: /etc/ssh/custom_sshd_config
         sshd_drop_in_dir_mode: '0770'
-        sshd:
+        sshd_config:
           Banner: /etc/include-issue
           Ciphers: aes192-ctr
 

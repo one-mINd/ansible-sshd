@@ -30,16 +30,19 @@
 # invoke role through "roles"
 - name: Test hostkeys via role
   hosts: all
-  roles:
-    - ansible-sshd
   vars:
     # very BAD example
     sshd_hostkey_owner: "nobody"
     sshd_hostkey_group: "nobody"
     sshd_hostkey_mode: "0664"
-    sshd:
+    sshd_config:
       HostKey:
         - /tmp/ssh_host_rsa_key2
+  tasks:
+    - name: Run ansible-sshd role
+      ansible.builtin.include_tasks: tasks/run_role_with_clear_facts.yml
+      vars:
+        __sr_public: true
 
 - name: Test hostkeys via role - verify
   hosts: all

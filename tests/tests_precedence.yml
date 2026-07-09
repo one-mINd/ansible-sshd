@@ -16,10 +16,9 @@
         state: absent
 
     - name: Configure sshd  # noqa var-naming
-      ansible.builtin.include_role:
-        name: ansible-sshd
+      ansible.builtin.include_tasks: tasks/run_role_with_clear_facts.yml
       vars:
-        sshd:
+        sshd_config:
           Banner: /etc/issue
           Ciphers: aes256-ctr
           HostKey: /etc/ssh/ssh_host_rsa_key

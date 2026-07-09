@@ -1,33 +1,55 @@
 ---
 - name: Ensure ansible_facts used by role
   ansible.builtin.setup:
-    gather_subset: min
-  when: not ansible_facts.keys() | list |
-    intersect(__sshd_required_facts) == __sshd_required_facts
+    gather_subset:
+      - min
+      - virtual
+  when: __sshd_required_facts |
+    difference(ansible_facts.keys() | list) | length > 0
+  no_log: "{{ ansible_verbosity < 3 }}"
+
+- name: Record role begin fingerprint
+  sr_fingerprint:
+    sr_message: >-
+      begin willshersystems:ansible-sshd ansible_version={{ ansible_version.full }}
+      {{ ansible_facts['distribution'] }}-{{ ansible_facts['distribution_version'] }}
+  when: sshd_enable_fingerprint | bool
+
+- name: Determine if system is ostree and set flag
+  when: not __sshd_is_ostree is defined
+  block:
+    - name: Check if system is ostree
+      ansible.builtin.stat:
+        path: /run/ostree-booted
+      register: __ostree_booted_stat
+
+    - name: Set flag to indicate system is ostree
+      ansible.builtin.set_fact:
+        __sshd_is_ostree: "{{ __ostree_booted_stat.stat.exists }}"
 
 - name: Set OS dependent variables
-  ansible.builtin.include_vars: "{{ lookup('first_found', params) }}"
+  ansible.builtin.include_vars: "{{ item }}"
   vars:
-    ansible_distribution_lts_offset: >-
+    _distribution_lts_offset: >-
       {{
-        ansible_distribution_major_version | int % 2
-        if ansible_distribution == "Ubuntu"
+        ansible_facts['distribution_major_version'] | int % 2
+        if ansible_facts['distribution'] == "Ubuntu"
         else 0
       }}
-    ansible_distribution_lts_version: >-
+    _distribution_lts_version: >-
       {{
-        ansible_distribution_major_version | int -
-        ansible_distribution_lts_offset | int
-        if ansible_distribution == "Ubuntu"
-        else ansible_distribution_version
+        ansible_facts['distribution_major_version'] | int -
+        _distribution_lts_offset | int
+        if ansible_facts['distribution'] == "Ubuntu"
+        else ansible_facts['distribution_version']
       }}
-    params:
-      files:
-        - "{{ ansible_distribution }}_{{ ansible_distribution_lts_version }}.yml"
-        - "{{ ansible_os_family }}_{{ ansible_distribution_major_version }}.yml"
-        - "{{ ansible_distribution }}.yml"
-        - "{{ ansible_os_family }}.yml"
-        - main.yml  # fallback, vars/main.yml is always loaded by Ansible
+  with_first_found:
+    - files:
+        - "{{ ansible_facts['distribution'] }}_{{ _distribution_lts_version }}.yml"
+        - "{{ ansible_facts['os_family'] }}_{{ ansible_facts['distribution_major_version'] }}.yml"
+        - "{{ ansible_facts['distribution'] }}.yml"
+        - "{{ ansible_facts['os_family'] }}.yml"
       paths:
         - "{{ role_path }}/vars"
         - "{{ playbook_dir }}/vars"
+      skip: true

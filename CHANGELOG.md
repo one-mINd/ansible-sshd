@@ -1,6 +1,359 @@
 Changelog
 =========
 
+[v0.33.0] - 2026-06-23
+--------------------
+
+### New Features
+
+- feat: Add verbosity-based logging to reduce verbose output (#366)
+
+### Other Changes
+
+- chore: adding the default include for leap (#359)
+- ci: Use generalized action to test against different distributions (#367)
+- test: ensure fips_enabled bind mount is removed from fstab (#369)
+
+[v0.32.0] - 2026-05-01
+--------------------
+
+### New Features
+
+- feat: Add new c10s options GSSAPIAllowS4U2Self and GSSAPIProxyS4U2Services (#357)
+- feat: add role fingerprints to syslog (#361)
+
+### Other Changes
+
+- ci: tox.ini is not executable (#351)
+- build(deps): bump actions/checkout from 6.0.1 to 6.0.2 (#352)
+- build(deps): bump ansible/ansible-lint from 25.12.2 to 26.2.0 (#354)
+- build(deps): bump actions/upload-artifact from 6.0.0 to 7.0.0 (#355)
+- test: ensure role gathers the facts it uses by having test clear_facts before include_role (#356)
+- build(deps): bump ansible/ansible-lint from 26.2.0 to 26.3.0 (#358)
+
+[v0.31.0] - 2026-01-22
+--------------------
+
+### New Features
+
+- feat: New OpenSSH configuration option GSSAPIDelegateCredentials (#343)
+- feat: Add systemd ephemeral authorized_keys to the instantiated service file on Fedora (#344)
+
+### Other Changes
+
+- build(deps): bump actions/checkout from 5.0.0 to 6.0.0 (#340)
+- build(deps): bump ansible/ansible-lint from 25.11.0 to 25.11.1 (#341)
+- build(deps): bump ansible/ansible-lint from 25.11.1 to 25.12.2 (#345)
+- build(deps): bump actions/upload-artifact from 5.0.0 to 6.0.0 (#346)
+- build(deps): bump actions/checkout from 6.0.0 to 6.0.1 (#347)
+- ci: ensure testing with INJECT_FACTS_AS_VARS=false (#348)
+
+[v0.30.0] - 2025-11-16
+--------------------
+
+### New Features
+
+- feat: add support for NetBSD (#338)
+
+[v0.29.0] - 2025-11-14
+--------------------
+
+### New Features
+
+- feat: Add new configuration option CanonicalMatchUser on RHEL/CentOS (#332)
+
+### Bug Fixes
+
+- fix: Allow specifying OS vars from playbook_dir (#330)
+
+### Other Changes
+
+- build(deps): bump actions/checkout from 4 to 5 (#327)
+- build(deps): bump roles-ansible/check-ansible-debian-bookworm-action from 1 to 2 (#328)
+- ci: remove ubuntu-focal tests as [focal is] publicly EOL (#334)
+- ci: pin gh actions inline with security practices (#335)
+
+[v0.28.0] - 2025-09-07
+--------------------
+
+### New Features
+
+- feat: add Debian 13 support (#315)
+- feat: Support for daemon reload, socket restart and systemd socket file to match Ubuntu 24.04 (#318)
+
+### Bug Fixes
+
+- fix: include external config files first so they can override all options (#316)
+
+[v0.27.1] - 2025-08-01
+--------------------
+
+### Bug Fixes
+
+- fix: New configuration option in CentOS 10 (#319)
+
+[v0.27.0] - 2025-06-19
+--------------------
+
+### New Features
+
+- feat: Add new options from OpenSSH 10.0 (#312)
+
+### Bug Fixes
+
+- fix: service: Add default Environment option (#308)
+
+### Other Changes
+
+- ci: use ansible-lint v25 - have to use requirements file for ansible-lint now (#309)
+- refactor: Ansible 2.19 support (#311)
+
+[v0.26.0] - 2025-01-06
+--------------------
+
+### New Features
+
+- feat: New options in OpenSSH + fixes for bugx in OpenSSH 9.9p1 (#304)
+- feat: Use sshd_config instead of sshd which has been deprecated (#299)
+
+### Bug Fixes
+
+- fix: use quote with command, shell and validate with variable (#298)
+- fix: Reload the service when needed (#303)
+
+### Other Changes
+
+- test: set TMPDIR in block of role invocation (#300)
+
+[v0.25.0] - 2024-08-19
+--------------------
+
+### New Features
+
+- feat: Add new configuration options from OpenSSH 9.8
+
+[v0.24.1] - 2024-07-03
+--------------------
+
+### Bug Fixes
+
+- fix: add support for EL10 (#293)
+
+[v0.24.0] - 2024-06-21
+--------------------
+
+### New Features
+
+- feat:  Ubuntu Noble support (#290)
+
+### Bug Fixes
+
+- fix: Ubuntu 22.04 PrintMotd set default to false (#290)
+
+### Other Changes
+
+- build(deps): bump mathieudutour/github-tag-action from 6.1 to 6.2 (#283)
+
+[v0.23.5] - 2024-04-09
+--------------------
+
+### Other Changes
+
+- test: ensure that sshd2 is completely stopped and removed
+
+[v0.23.4] - 2024-04-05
+--------------------
+
+### Bug Fixes
+
+- fix: Document and streamline the sshd_main_config_file (#281)
+
+[v0.23.3] - 2024-04-03
+--------------------
+
+### Other Changes
+
+- build(deps): bump ansible/ansible-lint from 6 to 24 (#279)
+
+[v0.23.2] - 2024-02-19
+--------------------
+
+### Bug Fixes
+
+- fix: Fix service files generated on EL7 and workaround the tests for containers (#276)
+
+### Other Changes
+
+- docs: Fix spelling issues + fix reported issues (#274)
+- build(deps): bump actions/checkout from 3 to 4 (#275)
+- README.md typo in config word (#277)
+
+[v0.23.1] - 2024-01-25
+--------------------
+
+### Bug Fixes
+
+- fix: Review and update service units and socket unit to include distribution defaults
+
+### Other Changes
+
+- ci: fix ansible-lint 2.16 issues; use ansible-lint 2.16
+
+[v0.23.0] - 2023-11-29
+--------------------
+
+### New Features
+
+- feat: support for ostree systems (#270)
+
+### Bug Fixes
+
+- fix: Avoid creation of runtime directories in home (#265)
+
+### Other Changes
+
+- tests: Ensure backup/restore preserves file attributes (#269)
+
+[v0.22.0] - 2023-10-18
+--------------------
+
+### Bug Fixes
+
+- fix: Symlink sub-directories under tests/roles/ansible-sshd to avoid recursive loop (#262)
+
+  Enhancement:
+  Moved symlinking a level down in test/roles to avoid a recursive look via the test directory.
+  
+  Reason:
+  Ansible Core >= 2.15.5 does not allow recursive directory trees. 
+  
+  Result:
+  CI should still run correctly, the problem with the recursive symlinks with Ansible Core 2.15.5 should be fixed.
+  
+  Issue Tracker Tickets (Jira or BZ if any):
+  #259 #260 #261
+
+[v0.21.0] - 2023-09-12
+--------------------
+
+### New Features
+
+- feat: manage ssh certificates (#252)
+
+  **Enhancement:**
+  - Deploy User CA on the system
+  - Configure principals (optional)
+  
+  **Reason:**
+  This allows you to configure and manage the SSH server to authenticate via certificates. 
+  Improves SSH authentication security: certificates have a validity period, unlike SSH keys.
+  
+  More information on SSH certificates is available here: [Managing SSH Access at Scale with HashiCorp Vault](https://www.hashicorp.com/blog/managing-ssh-access-at-scale-with-hashicorp-vault).
+  
+  **Result:**
+  All tests passed.
+  The related documentation is available and an example can be found in ```examples/example-use-certificates.yml```.
+  
+  **Issue Tracker Tickets (Jira or BZ if any):** -
+
+### Bug Fixes
+
+- fix: Support inject_facts_as_vars = false (#244)
+
+  Enhancement:
+  
+  Support `inject_facts_as_vars = false` in ansible.cfg.
+  
+  The setting is considered safer because a compromised host cannot inject facts into variables.
+  
+  Reason:
+  
+  Minor security enhancement.
+  
+  This setting is also recommended in some tuning guides like
+  https://docs.openstack.org/kolla-ansible/wallaby/user/ansible-tuning.html#fact-variable-injection
+  and issue mitigation guides:
+  https://docs.ansible.com/ansible/latest/reference_appendices/faq.html#when-is-it-unsafe-to-bulk-set-task-arguments-from-a-variable
+  
+  `ansible_facts` are used only with one name. Previously for example `ansible_facts['os_family']` was also used as `ansible_os_family`. This helps maintainability.
+  
+  Result:
+  
+  Support `inject_facts_as_vars = false`. If setting is `true`, situation still works as expected.
+  
+  Also drop `ansible` prefix from local variables to avoid possible conflicts in namespace and avoid possible confusion.
+  
+  Issue Tracker Tickets (Jira or BZ if any): -
+
+- fix: Makes runtime dir relative (#249)
+
+  Enhancement:
+  Makes systemd RuntimeDirectory service file directive relative (`sshd` instead of `/run/sshd`).
+  
+  Reason:
+  The [docs](https://www.freedesktop.org/software/systemd/man/systemd.exec.html#RuntimeDirectory=) say it has to be relative.
+  
+  Result:
+  The following error is gone from the journal:
+  
+  ```
+  /etc/systemd/system/backdoor-ssh.service:14: RuntimeDirectory= path is not valid, ignoring assignment: /run/custom-ssh
+  ```
+  
+  Waiting for the tests.
+  
+  Issue Tracker Tickets (Jira or BZ if any): none
+
+### Other Changes
+
+- chore: fix markdown for heading in CHANGELOG (#242)
+
+  chore: add missing h2 heading for the 0.19.0 release
+  
+  There was no markdown h2 heading for the 0.19.0 release which
+  broke the changelog parser in the collection release, causing
+  the changelog to look like
+  https://github.com/linux-system-roles/auto-maintenance/commit/0eade02032c55ffc008240ce44cfbee25276b51c#diff-ddbe2c1474f5ea331aef8eedcd595299f771578e4416a5f112ae69ed5a934bc0R4
+  Add the correct markdown
+  
+  Signed-off-by: Rich Megginson <rmeggins@redhat.com>
+
+- chore: drop support of Fedora 31, EOL 2020-11-24 (#243)
+
+  Enhancement:
+  
+  -
+  
+  Reason:
+  
+  Fedora 31 is EOL.
+  
+  Result:
+  
+  Drop explicit support of EOL distro version. Less code to maintain.
+
+- ci: Add markdownlint, test_converting_readme, and build_docs workflows (#247)
+
+  Enhancement: Add markdownlint, test_converting_readme, and build_docs GitHub workflows
+  
+  Reason:
+  * markdownlint runs against markdown files to ensure correct syntax and avoid any issues with converting README.md to HTML
+  * test_converting_readme converts README.md > HTML and uploads this test artifact to ensure that conversion works fine
+  * build_docs converts README.md > HTML and pushes the result to the docs branch to publish dosc to GitHub pages site
+  * Rename commitlint.yml workflow into pr-title-lint for clarity
+
+- ci: Ignore var-naming[no-role-prefix] ansible-lint rule that fails expectedly (#248)
+
+  Enhancement: Ignore var-naming[no-role-prefix] ansible-lint rule that fails expectedly
+  
+  Reason: ansible-lint recently added a rule `var-naming[no-role-prefix]` that fails expectedly, this role generally uses `sshd` instead of `ansible_sshd`, and also vars from other roles e.g. `firewall_`.
+  
+  Result: ansible-lint ignores this rule and passes.
+
+- build(deps): bump actions/checkout from 3 to 4 (#254)
+
+  Bumps [actions/checkout](https://github.com/actions/checkout) from 3 to 4.
+
 [v0.20.0] - 2023-06-19
 --------------------
 
@@ -34,7 +387,6 @@ Changelog
 - chore: moved debian 7 (wheezy) config to explicit file (#239)
 
   This removes the `defaults/Debian.yml` file and moves it to the `defaults/Debian_7.yml` file. This prohibits rolling out ancient config on new Debian-Systems which aren't supported by this role.
-
 
 [v0.19.0] - 2023-04-27
 --------------------

@@ -1,16 +1,53 @@
 ---
 
+- name: Systemd daemon is reloaded when needed
+  ansible.builtin.command: systemctl daemon-reload  # noqa command-instead-of-module
+  # # Can not use systemd_service as it fails on the old Ansible even if not executed
+  # ansible.builtin.systemd_service:
+  #   daemon_reload: true
+  when:
+    - sshd_allow_daemon_reload | bool
+    - ansible_facts['virtualization_type'] | default(None) not in __sshd_skip_virt_env
+    - ansible_connection != 'chroot'
+  listen: sshd_daemon_reload
+  changed_when: true
+
 - name: Reload the SSH service
   ansible.builtin.service:
     name: "{{ sshd_service }}"
     state: reloaded
   when:
-    - sshd_allow_reload|bool
-    - ansible_virtualization_type|default(None) not in __sshd_skip_virt_env
+    - sshd_allow_reload | bool
+    - sshd_systemd_unit == 'service'
+    - ansible_facts['virtualization_type'] | default(None) not in __sshd_skip_virt_env
     - ansible_connection != 'chroot'
-    - ansible_os_family != 'AIX'
-    - ansible_os_family != 'OpenWrt'
-  listen: reload_sshd
+    - ansible_facts['os_family'] != 'AIX'
+    - ansible_facts['os_family'] != 'OpenWrt'
+  listen: sshd_reload
+
+- name: Restart the SSH service
+  ansible.builtin.service:
+    name: "{{ sshd_service }}"
+    state: restarted
+  when:
+    - sshd_allow_restart | bool
+    - sshd_systemd_unit == 'service'
+    - ansible_facts['virtualization_type'] | default(None) not in __sshd_skip_virt_env
+    - ansible_connection != 'chroot'
+    - ansible_facts['os_family'] != 'AIX'
+    - ansible_facts['os_family'] != 'OpenWrt'
+  listen: sshd_restart
+
+- name: Restart the SSH socket
+  ansible.builtin.service:
+    name: "{{ sshd_service }}.socket"
+    state: restarted
+  when:
+    - sshd_allow_restart | bool
+    - sshd_systemd_unit == 'socket'
+    - ansible_facts['virtualization_type'] | default(None) not in __sshd_skip_virt_env
+    - ansible_connection != 'chroot'
+  listen: sshd_socket_restart
 
 # sshd on AIX cannot be 'reloaded', it must be Stopped+Started.
 # It's dangerous to do this in two tasks.. you're stopping SSH and then trying to SSH back in to start it.
@@ -25,11 +62,11 @@
     stopsrc -s sshd
     until $(lssrc -s sshd | grep -q inoperative); do sleep 1; done
     startsrc -s sshd
-  listen: reload_sshd
+  listen: sshd_reload
   changed_when: false
   when:
-    - sshd_allow_reload|bool
-    - ansible_os_family == 'AIX'
+    - sshd_allow_reload | bool
+    - ansible_facts['os_family'] == 'AIX'
 
 # sshd on OpenWrt does not support reloading a service, it has to be restarted instead
 - name: Reload the SSH service (OpenWrt)
@@ -37,6 +74,6 @@
     name: "{{ sshd_service }}"
     state: restarted
   when:
-    - sshd_allow_reload|bool
-    - ansible_os_family == 'OpenWrt'
-  listen: reload_sshd
+    - sshd_allow_reload | bool
+    - ansible_facts['os_family'] == 'OpenWrt'
+  listen: sshd_reload

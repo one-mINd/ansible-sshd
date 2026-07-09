@@ -23,3 +23,13 @@ __sshd_hostkeys_nofips:
 
 __sshd_drop_in_dir_mode: '0700'
 __sshd_main_config_file: /etc/ssh/sshd_config
+
+__sshd_environment_file: /etc/sysconfig/sshd
+__sshd_environment_variable:
+  - OPTIONS
+__sshd_service_after: sshd-keygen.target
+__sshd_service_wants:
+  - sshd-keygen.target
+  - ssh-host-keys-migration.service
+__sshd_service_restart_timeout: 42s
+__sshd_service_ephemeral_authorized_keys: "{{ ansible_facts['distribution_version'] is version('43', '>=') }}"

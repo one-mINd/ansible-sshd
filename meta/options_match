@@ -1,3 +1,4 @@
+Include
 AcceptEnv
 AllowAgentForwarding
 AllowGroups
@@ -29,13 +30,13 @@ HostbasedAcceptedAlgorithms
 HostbasedAuthentication
 HostbasedUsesNameFromPacketOnly
 IgnoreRhosts
-Include
 IPQoS
 KbdInteractiveAuthentication
 KerberosAuthentication
 LogLevel
 MaxAuthTries
 MaxSessions
+PAMServiceName
 PasswordAuthentication
 PermitEmptyPasswords
 PermitListen
@@ -49,6 +50,7 @@ PubkeyAcceptedAlgorithms
 PubkeyAuthentication
 PubkeyAuthOptions
 RDomain
+RefuseConnection
 RekeyLimit
 RevokedKeys
 RequiredRSASize

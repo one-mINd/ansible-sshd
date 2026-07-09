@@ -13,8 +13,7 @@
       ansible.builtin.include_tasks: tasks/backup.yml
 
     - name: Run the role with default parameters without FIPS mode
-      ansible.builtin.include_role:
-        name: ansible-sshd
+      ansible.builtin.include_tasks: tasks/run_role_with_clear_facts.yml
 
     - name: Verify the options are correctly set
       when:
@@ -95,10 +94,9 @@
         state: absent
 
     - name: Run the role with default parameters
-      ansible.builtin.include_role:
-        name: ansible-sshd
+      ansible.builtin.include_tasks: tasks/run_role_with_clear_facts.yml
 
-    - name: Verify the options are correctly set
+    - name: Verify the options are correctly set after reconfiguration
       when:
         - ansible_facts['os_family'] == 'RedHat'
         - ansible_facts['distribution_major_version'] | int > 6
@@ -138,7 +136,7 @@
         - name: Unmount the file
           ansible.posix.mount:
             path: /proc/sys/crypto/fips_enabled
-            state: unmounted
+            state: absent
           failed_when: false
 
         - name: Remove the temporary directory

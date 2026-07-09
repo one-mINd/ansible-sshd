@@ -1,6 +1,9 @@
 ---
 - name: Install systemd service files
-  when: sshd_install_service | bool
+  when:
+    - sshd_install_service | bool
+    - ansible_facts['service_mgr'] == 'systemd' or
+      (ansible_facts['os_family'] == 'RedHat' and ansible_facts['distribution_major_version'] == '7')
   block:
     - name: Install service unit file
       ansible.builtin.template:
@@ -9,7 +12,10 @@
         owner: root
         group: root
         mode: "0644"
-      notify: reload_sshd
+      notify:
+        - sshd_reload
+        - sshd_daemon_reload
+
     - name: Install instanced service unit file
       ansible.builtin.template:
         src: "{{ sshd_service_template_at_service }}"
@@ -17,7 +23,13 @@
         owner: root
         group: root
         mode: "0644"
-      notify: reload_sshd
+      notify:
+        - sshd_daemon_reload
+        - sshd_reload
+        - sshd_socket_restart
+      when:
+        - __sshd_socket_accept | bool
+
     - name: Install socket unit file
       ansible.builtin.template:
         src: "{{ sshd_service_template_socket }}"
@@ -25,7 +37,10 @@
         owner: root
         group: root
         mode: "0644"
-      notify: reload_sshd
+      notify:
+        - sshd_daemon_reload
+        - sshd_reload
+        - sshd_socket_restart
 
 - name: Service enabled and running
   ansible.builtin.service:
@@ -34,14 +49,15 @@
     state: started
   when:
     - sshd_manage_service|bool
-    - ansible_virtualization_type|default(None) not in __sshd_skip_virt_env
+    - ansible_facts['virtualization_type'] | default(None) not in __sshd_skip_virt_env
     - ansible_connection != 'chroot'
+  no_log: "{{ ansible_verbosity < 3 }}"
 
 # Due to ansible bug 21026, cannot use service module on RHEL 7
 - name: Enable service in chroot
-  ansible.builtin.command: systemctl enable {{ sshd_service }}  # noqa command-instead-of-module
+  ansible.builtin.command: systemctl enable {{ sshd_service | quote }}  # noqa command-instead-of-module
   when:
     - ansible_connection == 'chroot'
-    - ansible_os_family == 'RedHat'
-    - ansible_distribution_major_version|int >= 7
+    - ansible_facts['os_family'] == 'RedHat'
+    - ansible_facts['distribution_major_version'] | int >= 7
   changed_when: true
