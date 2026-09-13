@@ -1,0 +1,66 @@
+---
+- name: Install Google Authenticator PAM module
+  ansible.builtin.package:
+    name: "{{ __sshd_google_authenticator_package }}"
+    state: present
+    use: "{{ (__sshd_is_ostree | d(false)) |
+      ternary('ansible.posix.rhel_rpm_ostree', omit) }}"
+  when:
+    - sshd_google_authenticator | bool
+
+- name: Configure Google Authenticator PAM
+  ansible.builtin.template:
+    src: pam_sshd_google_authenticator.j2
+    dest: /etc/pam.d/sshd-google-authenticator
+    owner: root
+    group: root
+    mode: "0644"
+  when:
+    - sshd_google_authenticator | bool
+  notify: sshd_reload
+
+- name: Remove Google Authenticator PAM configuration
+  ansible.builtin.file:
+    path: /etc/pam.d/sshd-google-authenticator
+    state: absent
+  when:
+    - not sshd_google_authenticator | bool
+  notify: sshd_reload
+
+- name: Enable Google Authenticator in sshd PAM stack
+  ansible.builtin.blockinfile:
+    path: /etc/pam.d/sshd
+    insertbefore: BOF
+    marker: "# {mark} ANSIBLE MANAGED GOOGLE AUTHENTICATOR"
+    block: |
+      @include sshd-google-authenticator
+  when:
+    - sshd_google_authenticator | bool
+  notify: sshd_reload
+
+- name: Disable Google Authenticator in sshd PAM stack
+  ansible.builtin.blockinfile:
+    path: /etc/pam.d/sshd
+    marker: "# {mark} ANSIBLE MANAGED GOOGLE AUTHENTICATOR"
+    state: absent
+  when:
+    - not sshd_google_authenticator | bool
+  notify: sshd_reload
+
+- name: Disable password auth in sshd PAM stack
+  ansible.builtin.replace:
+    path: /etc/pam.d/sshd
+    regexp: '^@include common-auth\s*$'
+    replace: '# @include common-auth  # disabled for pubkey+TOTP 2FA'
+  when:
+    - sshd_google_authenticator | bool
+  notify: sshd_reload
+
+- name: Enable password auth in sshd PAM stack (restore @include common-auth)
+  ansible.builtin.replace:
+    path: /etc/pam.d/sshd
+    regexp: '^\s*#?\s*@include\s+common-auth\b.*$'
+    replace: '@include common-auth'
+  when:
+    - not (sshd_google_authenticator | bool)
+  notify: sshd_reload
